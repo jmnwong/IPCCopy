@@ -1,0 +1,19 @@
+Requirements:
+- Linux
+
+Compilation:
+cc -Wall -o cpy copy.c -lrt
+
+Usage:
+./cpy <numReaders> <numWriters> <sourceFile> <destinationFile> <bufferSize> <readerLog> <writerLog>
+
+Description:
+This program forks a group of child 'reader' and 'writer' processes that copies a file byte for byte from a source to destination file passed as a command-line argument.  The parent then appends "DONE" to the end of the new file.
+
+Child processes share a circular buffer of structs holding the byte and the offset in the file where it was read.  Each reader process reads the next single byte from the file and writes, to the next available empty buffer slot, that byte and its offset in the file.  Each writer process reads, from the next available nonempty buffer slot and writes it to the file.  
+
+Data is shared using System V shared memory and critical sections are protected using both unnamed and named semaphores.  
+
+The log files are used to trace execution of the program.  Each child process is numbered where readers are number 1 to <numReaders> and writers are numbered <numReaders> + 1 to <numReaders> + <numWriters>.  The reader will write 'n offset index' to the file where 'n' is the process number, 'offset' is the offset in the file where that byte was read, and 'index' is the location in the buffer that it was written to.  Similarly, the writer will write 'n offset index' as well where 'n' is the process number, 'offset' is the position in the copied file it is writing to, and 'index' is the location in the buffer where that byte was read.  
+
+
